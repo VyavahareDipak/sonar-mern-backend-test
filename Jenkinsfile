@@ -30,9 +30,6 @@ pipeline {
             steps {
                 bat '''
                 set PATH=%NODEJS_HOME%;%PATH%
-                if not exist .eslintrc.json (
-                    npm init @eslint/config --yes
-                )
                 npm run lint
                 '''
             }
