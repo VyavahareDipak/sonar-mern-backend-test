@@ -1,23 +1,24 @@
-pipeline{  //it indicate it declarative pipeline . and pipeline stars from here
-  agent any
-  tools{
-    nodejs 'nodeJS' //name same as used in Jenkins tools.
-  }
+pipeline {
+    agent any
+    tools {
+        nodejs 'nodeJS' // Ensure this matches the NodeJS installation name in Jenkins Global Tool Configuration
+    }
 
-  environment{
-    NODEJS_HOME = 'C:/Program Files/nodejs'
-    SONAR_SCANNER_PATH='C:/Program Files/sonar-scanner-cli-6.2.1.4610-windows-x64/sonar-scanner-6.2.1.4610-windows-x64/bin'
-  }
-   stages {
+    environment {
+        NODEJS_HOME = 'C:/Program Files/nodejs'
+        SONAR_SCANNER_PATH = 'C:/Program Files/sonar-scanner-cli-6.2.1.4610-windows-x64/sonar-scanner-6.2.1.4610-windows-x64/bin'
+    }
+
+    stages {
         stage('Checkout') {
             steps {
+                // Checkout the source code from the repository
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Set the PATH and install dependencies using npm
                 bat '''
                 set PATH=%NODEJS_HOME%;%PATH%
                 npm install
@@ -27,7 +28,6 @@ pipeline{  //it indicate it declarative pipeline . and pipeline stars from here
 
         stage('Lint') {
             steps {
-                // Run linting to ensure code quality.show realtime code quality. sonarqube give analysis after code 
                 bat '''
                 set PATH=%NODEJS_HOME%;%PATH%
                 npm run lint
@@ -35,30 +35,27 @@ pipeline{  //it indicate it declarative pipeline . and pipeline stars from here
             }
         }
 
-      
-
         stage('SonarQube Analysis') {
             environment {
-                SONAR_TOKEN = credentials('sonar-global-token') // Accessing the SonarQube token stored in Jenkins credentials
+                SONAR_TOKEN = credentials('sonar-global-token') // Use a Jenkins credential ID for security
             }
             steps {
-                // Ensure that sonar-scanner is in the PATH
                 bat '''
                 set PATH=%SONAR_SCANNER_PATH%;%PATH%
-                where sonar-scanner || echo "SonarQube scanner not found. Please install it."
-                sonar-scanner -Dsonar.projectKey= mern-backend-test ^
-                    -Dsonar.sources=. ^
-                    -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.token=%SONAR_TOKEN% 2>&1
+                sonar-scanner -Dsonar.projectKey=mern-backend-test ^
+                              -Dsonar.sources=. ^
+                              -Dsonar.host.url=http://localhost:9000 ^
+                              -Dsonar.login=%SONAR_TOKEN% 2>&1
                 '''
             }
         }
-     stage('Deploy') {
+
+        stage('Deploy') {
             steps {
-                    bat '''
-                    set PATH=%NODEJS_HOME%;%PATH%
-                    npm start
-                    '''
+                bat '''
+                set PATH=%NODEJS_HOME%;%PATH%
+                npm start
+                '''
             }
         }
     }
@@ -75,4 +72,3 @@ pipeline{  //it indicate it declarative pipeline . and pipeline stars from here
         }
     }
 }
-
