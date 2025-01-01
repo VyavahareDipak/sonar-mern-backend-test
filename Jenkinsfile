@@ -35,15 +35,7 @@ pipeline{  //it indicate it declarative pipeline . and pipeline stars from here
             }
         }
 
-        stage('Build') {
-            steps {
-                // Build the React app
-                bat '''
-                set PATH=%NODEJS_HOME%;%PATH%
-                npm run build
-                '''
-            }
-        }
+      
 
         stage('SonarQube Analysis') {
             environment {
@@ -59,6 +51,14 @@ pipeline{  //it indicate it declarative pipeline . and pipeline stars from here
                     -Dsonar.host.url=http://localhost:9000 ^
                     -Dsonar.token=%SONAR_TOKEN% 2>&1
                 '''
+            }
+        }
+     stage('Deploy') {
+            steps {
+                    bat '''
+                    set PATH=%NODEJS_HOME%;%PATH%
+                    npm start
+                    '''
             }
         }
     }
